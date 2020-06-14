@@ -11,9 +11,9 @@ class Webhook():
     def setWebhook(self):
         
         if os.environ.get('PRODUCTION') == 'True':
-            url_path = '&&'
+            url_path = 'https://ersh-telegram-bot.herokuapp.com/'
         else:
-            url_path = 'https://ab3cb8f08b79.ngrok.io'
+            url_path = 'https://aabe5eb3f80d.ngrok.io'
         
         print(f'Connecting to: {url_path}')
         set_url = os.path.join(self.url, 'setWebhook')

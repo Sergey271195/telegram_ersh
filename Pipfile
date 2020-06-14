@@ -34,6 +34,7 @@ whitenoise = "==5.1.0"
 Cycler = "==0.10.0"
 Django = "==3.0.6"
 pyOpenSSL = "==19.1.0"
+beautifulsoup4 = "*"
 
 [requires]
 python_version = "3.7"

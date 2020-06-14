@@ -1,14 +1,9 @@
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
 import requests
 from bs4 import BeautifulSoup
 import re
 import json
 
-from .models import Section, Dish
-from .customTg import TelegramBot, createRowKeyboard
+from .views import Section, Dish
 
 def create_db(Section, Dish):
 
@@ -61,14 +56,16 @@ def create_db(Section, Dish):
         all_keys = key.split('#')
         img_src = all_keys[0]
         section_title = all_keys[1]
-        additional_info = ''
+        print('Title:', section_title)
         if len(all_keys) == 3:
             additional_info = all_keys[2]
-        section = Section(section_title = section_title, additional_info = additional_info, img_url = img_src)
-        section.save()
+            print('Info:', additional_info)
+        print('Img src:', img_src)
+
         for dish_title in menu_dict[key]:
+            print('DISH_TITLE', dish_title)
             prop, price = 0, 0
-            info_dict = {'type_1': '', 'price_1': None, 'type_2': '', 'price_2': None, 'type_3': '', 'price_3': None, 'type_4': '', 'price_4': None}
+            info_dict = {'type_1': '', 'price_1': '', 'type_2': '', 'price_2': '', 'type_3': '', 'price_3': '', 'type_4': '', 'price_4': ''}
             for dish_info in menu_dict[key][dish_title]:
                 if ' руб.' in dish_info:
                     price+= 1
@@ -76,46 +73,6 @@ def create_db(Section, Dish):
                 else:
                     prop+= 1
                     info_dict[f'type_{prop}'] = dish_info
-            dish = Dish(section = section, dish_title = dish_title, **info_dict)
-            dish.save()
 
-
-class ErshApiView():
-
-    def __init__(self):
-        self.tgBot = TelegramBot()
-
-
-    def check_db_if_created(self):
-        if len(Section.objects.all()) == 0:
-            create_db(Section, Dish)
-
-    @csrf_exempt
-    def dispatch(self, request):
-        if request.method == 'GET':
-            response = self.get(request)
-            return response
-
-        if request.method == 'POST':
-            response = self.post(request)
-            return response
-
-    def get(self, request):
-        return(HttpResponse('<h1>Ersh Api View</h1>'))
+            print(info_dict)
     
-    def post(self, request):
-        self.check_db_if_created()
-        request_body = json.loads(request.body)
-        print(request_body)
-
-        sections = Section.objects.all()
-        sections_name = [(section.section_title, section.section_title) for section in sections]
-
-        message = request_body.get('message')
-        if message:
-            user_id = message['from'].get('id')
-            self.tgBot.sendMessage(user_id, text = 'Категории блюд', reply_markup = createRowKeyboard(sections_name))
-            
-        
-        print(sections_name)
-        return(HttpResponse(200))
