@@ -20,8 +20,7 @@ class TelegramBot():
 
         self.token = os.environ.get('ERSH_TOKEN')
         self.url = f'https://api.telegram.org/bot{self.token}'
-        
-        print(self.token)
+
     def getMe(self):
         
         get_me_url = os.path.join(self.url, 'getMe')

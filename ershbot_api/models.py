@@ -24,3 +24,16 @@ class Dish(models.Model):
 
     def __str__(self):
         return(f'{self.section} + {self.dish_title} + {self.type_1} + {self.price_1}')
+
+
+    def prepare_message(self):
+        message_title = f"<b>{self.dish_title}</b>\n"
+        message_body = ''
+        for key in self.__dict__.keys():
+            if vars(self)[key]:
+                if 'type' in key:
+                    message_body+= f'\t\t - {vars(self)[key]}\n'
+                elif 'price' in key:
+                    message_body += f'Стоимость: {vars(self)[key]} руб\n'
+        return_message = message_title + message_body
+        return return_message

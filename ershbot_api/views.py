@@ -8,7 +8,7 @@ import re
 import json
 
 from .models import Section, Dish
-from .customTg import TelegramBot, createRowKeyboard
+from .customTg import TelegramBot, createRowKeyboard, createLineKeyboard
 
 def create_db(Section, Dish):
 
@@ -90,6 +90,37 @@ class ErshApiView():
         if len(Section.objects.all()) == 0:
             create_db(Section, Dish)
 
+    def callback_handler(self, callback_query):
+        user_id = callback_query['from'].get('id')
+        message_id = callback_query['message'].get('message_id')
+        data = callback_query.get('data')
+
+        splited_data = data.split('_')
+        section = Section.objects.all().get(section_title = splited_data[0])
+        dishes = list(Dish.objects.all().filter(section__section_title = splited_data[0]))
+        
+        callback_type = len(splited_data)
+        if callback_type == 1:
+            current_dish = 0
+
+        else:
+            current_dish = int(splited_data[1]) % len(dishes)
+
+        LAYOUT = [
+            (splited_data[0]+'_'+str(current_dish-1), 'Назад'),
+            ('Info', f'{current_dish + 1}/{len(dishes)}'),
+            (splited_data[0]+'_'+str(current_dish+1), 'Вперед')
+        ]
+        
+        message_head = f'{section.section_title}\n<a href="{section.img_url}">&#8203;</a>\n'
+        message_body = dishes[current_dish].prepare_message()
+        if callback_type == 1:
+            self.tgBot.sendMessage(user_id, text = message_head+message_body, parse_mode="HTML", reply_markup=createLineKeyboard(LAYOUT))
+        
+        else:
+            self.tgBot.editMessageText(user_id, message_id = message_id, text = message_head+message_body, parse_mode="HTML", reply_markup=createLineKeyboard(LAYOUT))
+    
+
     @csrf_exempt
     def dispatch(self, request):
         if request.method == 'GET':
@@ -111,11 +142,13 @@ class ErshApiView():
         sections = Section.objects.all()
         sections_name = [(section.section_title, section.section_title) for section in sections]
 
+        callback_query = request_body.get('callback_query')
         message = request_body.get('message')
+        if callback_query:
+            self.callback_handler(callback_query)
+        
         if message:
             user_id = message['from'].get('id')
             self.tgBot.sendMessage(user_id, text = 'Категории блюд', reply_markup = createRowKeyboard(sections_name))
             
-        
-        print(sections_name)
         return(HttpResponse(200))
