@@ -13,8 +13,7 @@ def bot_command_decorator(command):
                     return method_to_decorate(self, request_body, user_id)
         return wrapper
     return method_decorator
-            
-
+        
 class TelegramBot():
 
     def __init__(self):
@@ -22,7 +21,7 @@ class TelegramBot():
         self.token = os.environ.get('ERSH_TOKEN')
         self.url = f'https://api.telegram.org/bot{self.token}'
         
-    
+        print(self.token)
     def getMe(self):
         
         get_me_url = os.path.join(self.url, 'getMe')

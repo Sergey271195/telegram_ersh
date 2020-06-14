@@ -1,1 +1,1 @@
-web: gunicorn newsbot.wsgi
+web: gunicorn ershbot.wsgi
